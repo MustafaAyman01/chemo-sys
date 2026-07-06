@@ -73,7 +73,7 @@ function PayslipModal({ record, open, onClose }) {
             </tr>
             <tr style={{ borderBottom: '1px solid #f0f1f3' }}>
               <td style={{ padding: '8px 0', color: '#6b7280' }}>أيام الغياب</td>
-              <td style={{ padding: '8px 0', textAlign: 'left' }} className="num" style={{ color: record.absent_days > 0 ? '#dc2626' : 'inherit' }}>{record.absent_days}</td>
+              <td className="num" style={{ padding: '8px 0', textAlign: 'left', color: record.absent_days > 0 ? '#dc2626' : 'inherit' }}>{record.absent_days}</td>
             </tr>
           </tbody>
         </table>
