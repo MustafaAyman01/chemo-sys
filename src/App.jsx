@@ -18,6 +18,7 @@ import SalesOrdersPage from './pages/SalesOrdersPage'
 import SalesInvoicesPage from './pages/SalesInvoicesPage'
 import ExpensesPage from './pages/ExpensesPage'
 import PaymentsPage from './pages/PaymentsPage'
+import BanksPage from './pages/BanksPage'
 import EmployeesPage from './pages/EmployeesPage'
 import AttendancePage from './pages/AttendancePage'
 import PayrollPage from './pages/PayrollPage'
@@ -123,6 +124,7 @@ export default function App() {
         {/* Phase 6 - Finance */}
         <Route path="expenses"          element={<ModuleGuard module="finance"><ExpensesPage /></ModuleGuard>} />
         <Route path="payments"          element={<ModuleGuard module="finance"><PaymentsPage /></ModuleGuard>} />
+        <Route path="banks"             element={<ModuleGuard module="banks"><BanksPage /></ModuleGuard>} />
 
         {/* Phase 7 - HR */}
         <Route path="employees"         element={<ModuleGuard module="hr"><EmployeesPage /></ModuleGuard>} />

@@ -7,7 +7,7 @@ import {
   Factory, TrendingUp, Receipt, UserCheck, Clock, DollarSign,
   BarChart3, Settings, ChevronDown, Bell, Search, Menu, X,
   FlaskConical, Truck, Warehouse, ClipboardList, Building2,
-  LogOut, User, ChevronRight, ShieldCheck, CheckCircle2,
+  LogOut, User, ChevronRight, ShieldCheck, CheckCircle2, Landmark,
 } from 'lucide-react'
 import { useNotifications } from '../../hooks/useNotifications'
 
@@ -60,6 +60,13 @@ const NAV_SECTIONS = [
     items: [
       { to: '/expenses', icon: DollarSign, label: 'المصاريف' },
       { to: '/payments', icon: Receipt,    label: 'المدفوعات' },
+    ],
+  },
+  {
+    label: 'البنوك',
+    module: 'banks',
+    items: [
+      { to: '/banks', icon: Landmark, label: 'الحسابات البنكية' },
     ],
   },
   {
