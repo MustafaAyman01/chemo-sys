@@ -116,7 +116,7 @@ function POForm({ onSubmit, loading }) {
           </div>
 
           <FormField label="تاريخ الأمر" required error={errors.order_date?.message}>
-            <input type="date" className="form-input ltr" {...register('order_date')} />
+            <input type="date" className={`form-input ltr ${errors.order_date ? 'error' : ''}`} {...register('order_date')} />
           </FormField>
 
           <FormField label="تاريخ التسليم المتوقع">
@@ -230,7 +230,7 @@ function POForm({ onSubmit, loading }) {
                     <td style={{ padding: '8px 6px' }}>
                       <input
                         type="number" step="0.001"
-                        className="form-input ltr"
+                        className={`form-input ltr ${errors.items?.[idx]?.quantity ? 'error' : ''}`}
                         style={{ height: 34, fontSize: 12, textAlign: 'right' }}
                         {...register(`items.${idx}.quantity`)}
                         dir="ltr"
@@ -239,7 +239,7 @@ function POForm({ onSubmit, loading }) {
                     <td style={{ padding: '8px 6px' }}>
                       <input
                         type="number" step="0.0001"
-                        className="form-input ltr"
+                        className={`form-input ltr ${errors.items?.[idx]?.unit_price ? 'error' : ''}`}
                         style={{ height: 34, fontSize: 12, textAlign: 'right' }}
                         {...register(`items.${idx}.unit_price`)}
                         dir="ltr"

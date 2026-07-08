@@ -62,7 +62,7 @@ function EmployeeForm({ defaultValues, onSubmit }) {
           <input className={`form-input ltr ${errors.national_id ? 'error' : ''}`} {...register('national_id')} dir="ltr" maxLength={14} />
         </FormField>
         <FormField label="تاريخ التعيين" required error={errors.hire_date?.message}>
-          <input type="date" className="form-input ltr" {...register('hire_date')} />
+          <input type="date" className={`form-input ltr ${errors.hire_date ? 'error' : ''}`} {...register('hire_date')} />
         </FormField>
       </div>
 

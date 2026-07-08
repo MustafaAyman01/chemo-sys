@@ -33,6 +33,10 @@ export const useCreateExpense = () => {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (data) => {
+      // Convert empty-string optional fields (e.g. enum columns like payment_method)
+      // to null so Postgres doesn't reject them with "invalid input value for enum"
+      Object.keys(data).forEach(k => { if (data[k] === '') data[k] = null })
+
       if (!data.reference_number) {
         const { count } = await supabase.from('expenses').select('*', { count: 'exact', head: true })
         data.reference_number = `EXP-${new Date().getFullYear().toString().slice(-2)}-${String((count || 0) + 1).padStart(5, '0')}`
@@ -71,6 +75,7 @@ export const useUpdateExpense = () => {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async ({ id, ...data }) => {
+      Object.keys(data).forEach(k => { if (data[k] === '') data[k] = null })
       const { data: result, error } = await supabase.from('expenses').update(data).eq('id', id).select().single()
       if (error) throw error
       return result

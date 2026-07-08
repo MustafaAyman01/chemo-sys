@@ -68,10 +68,16 @@ export const useCreatePO = () => {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async ({ items, ...poData }) => {
+      // Convert empty-string optional fields (e.g. enum columns) to null
+      // so Postgres doesn't reject them with "invalid input value for enum"
+      const cleanData = Object.fromEntries(
+        Object.entries(poData).map(([k, v]) => [k, v === '' ? null : v])
+      )
+
       // Insert PO
       const { data: po, error: poErr } = await supabase
         .from('purchase_orders')
-        .insert(poData)
+        .insert(cleanData)
         .select()
         .single()
       if (poErr) throw poErr

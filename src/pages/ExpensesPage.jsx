@@ -85,7 +85,7 @@ function ExpenseForm({ defaultValues, onSubmit }) {
         </FormField>
 
         <FormField label="تاريخ المصروف" required error={errors.expense_date?.message}>
-          <input type="date" className="form-input ltr" {...register('expense_date')} />
+          <input type="date" className={`form-input ltr ${errors.expense_date ? 'error' : ''}`} {...register('expense_date')} />
         </FormField>
 
         <div style={{ gridColumn: '1 / -1' }}>

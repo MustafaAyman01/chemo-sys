@@ -74,7 +74,7 @@ function InvoiceForm({ onSubmit }) {
           </FormField>
         </div>
         <FormField label="تاريخ الفاتورة" required error={errors.invoice_date?.message}>
-          <input type="date" className="form-input ltr" {...register('invoice_date')} />
+          <input type="date" className={`form-input ltr ${errors.invoice_date ? 'error' : ''}`} {...register('invoice_date')} />
         </FormField>
         <FormField label="تاريخ الاستحقاق" required error={errors.due_date?.message}>
           <input type="date" className={`form-input ltr ${errors.due_date ? 'error' : ''}`} {...register('due_date')} />
@@ -115,17 +115,17 @@ function InvoiceForm({ onSubmit }) {
                 return (
                   <tr key={field.id} style={{ borderTop: '1px solid #f0f1f3' }}>
                     <td style={{ padding: '8px 10px' }}>
-                      <select className="form-input" style={{ height: 34, fontSize: 12 }} {...register(`items.${idx}.item_id`)}>
+                      <select className={`form-input ${errors.items?.[idx]?.item_id ? 'error' : ''}`} style={{ height: 34, fontSize: 12 }} {...register(`items.${idx}.item_id`)}>
                         <option value="">اختر الصنف</option>
                         {products.map(p => <option key={p.id} value={p.id}>{p.code} — {p.name}</option>)}
                       </select>
                     </td>
                     <td style={{ padding: '8px 6px' }}>
-                      <input type="number" step="0.001" className="form-input ltr"
+                      <input type="number" step="0.001" className={`form-input ltr ${errors.items?.[idx]?.quantity ? 'error' : ''}`}
                         style={{ height: 34, fontSize: 12 }} {...register(`items.${idx}.quantity`)} dir="ltr" />
                     </td>
                     <td style={{ padding: '8px 6px' }}>
-                      <input type="number" step="0.0001" className="form-input ltr"
+                      <input type="number" step="0.0001" className={`form-input ltr ${errors.items?.[idx]?.unit_price ? 'error' : ''}`}
                         style={{ height: 34, fontSize: 12 }} {...register(`items.${idx}.unit_price`)} dir="ltr" />
                     </td>
                     <td style={{ padding: '8px 6px' }}>

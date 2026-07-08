@@ -139,7 +139,7 @@ function TransactionForm({ accounts, onSubmit }) {
           </select>
         </FormField>
         <FormField label="التاريخ" required error={errors.transaction_date?.message}>
-          <input className="form-input ltr" type="date" dir="ltr" {...register('transaction_date')} />
+          <input className={`form-input ltr ${errors.transaction_date ? 'error' : ''}`} type="date" dir="ltr" {...register('transaction_date')} />
         </FormField>
         <FormField label="المبلغ" required error={errors.amount?.message}>
           <input className="form-input ltr" type="number" step="0.01" dir="ltr" {...register('amount')} />
@@ -191,7 +191,7 @@ function TransferForm({ accounts, onSubmit }) {
           </select>
         </FormField>
         <FormField label="التاريخ" required error={errors.transaction_date?.message}>
-          <input className="form-input ltr" type="date" dir="ltr" {...register('transaction_date')} />
+          <input className={`form-input ltr ${errors.transaction_date ? 'error' : ''}`} type="date" dir="ltr" {...register('transaction_date')} />
         </FormField>
         <FormField label="المبلغ" required error={errors.amount?.message}>
           <input className="form-input ltr" type="number" step="0.01" dir="ltr" {...register('amount')} />
