@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Plus, Eye, Loader2, Receipt, Printer, DollarSign, AlertCircle } from 'lucide-react'
 import { useForm, useFieldArray } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -6,6 +6,7 @@ import { z } from 'zod'
 import { usePurchaseInvoices, useCreatePurchaseInvoice, useUpdateInvoicePayment } from '../hooks/usePurchaseInvoices'
 import { useSuppliers } from '../hooks/useSuppliers'
 import { useItems } from '../hooks/useItems'
+import { useExchangeRates } from '../hooks/useExchangeRates'
 import { useAuthStore } from '../store/authStore'
 import {
   PageHeader, FiltersBar, SearchInput, StatusBadge, EmptyState,
@@ -50,7 +51,7 @@ function InvoiceForm({ onSubmit }) {
   const { data: suppliers = [] } = useSuppliers({ is_active: true })
   const { data: items = [] }     = useItems({ is_active: true })
 
-  const { register, control, handleSubmit, watch, formState: { errors } } = useForm({
+  const { register, control, handleSubmit, watch, setValue, formState: { errors, dirtyFields } } = useForm({
     resolver: zodResolver(invoiceSchema),
     defaultValues: {
       invoice_date:  new Date().toISOString().split('T')[0],
@@ -63,6 +64,15 @@ function InvoiceForm({ onSubmit }) {
   const { fields, append, remove } = useFieldArray({ control, name: 'items' })
   const watchItems = watch('items')
   const currency   = watch('currency')
+
+  const { data: liveRates } = useExchangeRates()
+
+  useEffect(() => {
+    if (dirtyFields.exchange_rate) return
+    if (currency === 'EGP') { setValue('exchange_rate', 1); return }
+    const rate = liveRates?.[currency]
+    if (rate) setValue('exchange_rate', Number(rate.toFixed(4)))
+  }, [currency, liveRates]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const totals = watchItems.reduce((acc, it) => {
     const { discounted, tax, total } = calcLine(+it.quantity || 0, +it.unit_price || 0, +it.discount_pct || 0, it.tax_type)
@@ -100,7 +110,7 @@ function InvoiceForm({ onSubmit }) {
         </FormField>
 
         {currency !== 'EGP' && (
-          <FormField label="سعر الصرف">
+          <FormField label="سعر الصرف" hint={!dirtyFields.exchange_rate && liveRates?.[currency] ? 'سعر اليوم تلقائيًا — قابل للتعديل' : undefined}>
             <input type="number" step="0.0001" className="form-input ltr" {...register('exchange_rate')} dir="ltr" />
           </FormField>
         )}

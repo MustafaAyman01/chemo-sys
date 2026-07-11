@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Plus, Eye, X, Loader2, ShoppingCart, FileText, CheckCircle2, XCircle, Trash2 } from 'lucide-react'
 import { useForm, useFieldArray } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -6,6 +6,7 @@ import { z } from 'zod'
 import { usePurchaseOrders, useCreatePO, useUpdatePOStatus, useDeletePO } from '../hooks/usePurchaseOrders'
 import { useSuppliers } from '../hooks/useSuppliers'
 import { useItems } from '../hooks/useItems'
+import { useExchangeRates } from '../hooks/useExchangeRates'
 import { useAuthStore } from '../store/authStore'
 import {
   PageHeader, FiltersBar, SearchInput, StatusBadge, EmptyState,
@@ -66,7 +67,7 @@ function POForm({ onSubmit, loading }) {
   const { data: suppliers = [] } = useSuppliers({ is_active: true })
   const { data: items = [] }     = useItems({ is_active: true })
 
-  const { register, control, handleSubmit, watch, setValue, formState: { errors } } = useForm({
+  const { register, control, handleSubmit, watch, setValue, formState: { errors, dirtyFields } } = useForm({
     resolver: zodResolver(poSchema),
     defaultValues: {
       order_date:    new Date().toISOString().split('T')[0],
@@ -80,6 +81,17 @@ function POForm({ onSubmit, loading }) {
   const watchItems    = watch('items')
   const watchCurrency = watch('currency')
   const watchRate     = watch('exchange_rate') || 1
+
+  const { data: liveRates } = useExchangeRates()
+
+  // Prefill the exchange rate with today's live rate whenever the currency changes —
+  // but never overwrite it once the user has typed their own value.
+  useEffect(() => {
+    if (dirtyFields.exchange_rate) return
+    if (watchCurrency === 'EGP') { setValue('exchange_rate', 1); return }
+    const rate = liveRates?.[watchCurrency]
+    if (rate) setValue('exchange_rate', Number(rate.toFixed(4)))
+  }, [watchCurrency, liveRates]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Totals
   const totals = watchItems.reduce((acc, item) => {
@@ -130,7 +142,8 @@ function POForm({ onSubmit, loading }) {
           </FormField>
 
           {watchCurrency !== 'EGP' && (
-            <FormField label="سعر الصرف (مقابل الجنيه)" error={errors.exchange_rate?.message}>
+            <FormField label="سعر الصرف (مقابل الجنيه)" error={errors.exchange_rate?.message}
+              hint={!dirtyFields.exchange_rate && liveRates?.[watchCurrency] ? 'سعر اليوم تلقائيًا — قابل للتعديل' : undefined}>
               <input type="number" step="0.0001" className="form-input ltr" {...register('exchange_rate')} dir="ltr" />
             </FormField>
           )}
