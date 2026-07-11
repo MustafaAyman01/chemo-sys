@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Plus, Eye, Loader2, Receipt, Printer, DollarSign, AlertCircle } from 'lucide-react'
 import { useForm, useFieldArray } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -51,7 +51,7 @@ function InvoiceForm({ onSubmit }) {
   const { data: suppliers = [] } = useSuppliers({ is_active: true })
   const { data: items = [] }     = useItems({ is_active: true })
 
-  const { register, control, handleSubmit, watch, setValue, formState: { errors, dirtyFields } } = useForm({
+  const { register, control, handleSubmit, watch, setValue, formState: { errors } } = useForm({
     resolver: zodResolver(invoiceSchema),
     defaultValues: {
       invoice_date:  new Date().toISOString().split('T')[0],
@@ -67,12 +67,22 @@ function InvoiceForm({ onSubmit }) {
 
   const { data: liveRates } = useExchangeRates()
 
+  const [rateEditedManually, setRateEditedManually] = useState(false)
+  const prevCurrencyRef = useRef(currency)
+
   useEffect(() => {
-    if (dirtyFields.exchange_rate) return
+    if (prevCurrencyRef.current !== currency) {
+      prevCurrencyRef.current = currency
+      setRateEditedManually(false)
+    }
+  }, [currency])
+
+  useEffect(() => {
+    if (rateEditedManually) return
     if (currency === 'EGP') { setValue('exchange_rate', 1); return }
     const rate = liveRates?.[currency]
     if (rate) setValue('exchange_rate', Number(rate.toFixed(4)))
-  }, [currency, liveRates]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [currency, liveRates, rateEditedManually]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const totals = watchItems.reduce((acc, it) => {
     const { discounted, tax, total } = calcLine(+it.quantity || 0, +it.unit_price || 0, +it.discount_pct || 0, it.tax_type)
@@ -110,8 +120,9 @@ function InvoiceForm({ onSubmit }) {
         </FormField>
 
         {currency !== 'EGP' && (
-          <FormField label="سعر الصرف" hint={!dirtyFields.exchange_rate && liveRates?.[currency] ? 'سعر اليوم تلقائيًا — قابل للتعديل' : undefined}>
-            <input type="number" step="0.0001" className="form-input ltr" {...register('exchange_rate')} dir="ltr" />
+          <FormField label="سعر الصرف" hint={!rateEditedManually && liveRates?.[currency] ? 'سعر اليوم تلقائيًا — قابل للتعديل' : undefined}>
+            <input type="number" step="0.0001" className="form-input ltr" dir="ltr"
+              {...register('exchange_rate', { onChange: () => setRateEditedManually(true) })} />
           </FormField>
         )}
 

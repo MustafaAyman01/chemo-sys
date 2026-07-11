@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Plus, Eye, X, Loader2, ShoppingCart, FileText, CheckCircle2, XCircle, Trash2 } from 'lucide-react'
 import { useForm, useFieldArray } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -67,7 +67,7 @@ function POForm({ onSubmit, loading }) {
   const { data: suppliers = [] } = useSuppliers({ is_active: true })
   const { data: items = [] }     = useItems({ is_active: true })
 
-  const { register, control, handleSubmit, watch, setValue, formState: { errors, dirtyFields } } = useForm({
+  const { register, control, handleSubmit, watch, setValue, formState: { errors } } = useForm({
     resolver: zodResolver(poSchema),
     defaultValues: {
       order_date:    new Date().toISOString().split('T')[0],
@@ -84,14 +84,25 @@ function POForm({ onSubmit, loading }) {
 
   const { data: liveRates } = useExchangeRates()
 
-  // Prefill the exchange rate with today's live rate whenever the currency changes —
-  // but never overwrite it once the user has typed their own value.
+  // Tracks whether the user has manually typed a rate for the *currently selected* currency.
+  // Resets automatically every time the currency itself changes, so switching currencies always
+  // re-fetches today's live rate — even after a manual edit on a previous currency.
+  const [rateEditedManually, setRateEditedManually] = useState(false)
+  const prevCurrencyRef = useRef(watchCurrency)
+
   useEffect(() => {
-    if (dirtyFields.exchange_rate) return
+    if (prevCurrencyRef.current !== watchCurrency) {
+      prevCurrencyRef.current = watchCurrency
+      setRateEditedManually(false)
+    }
+  }, [watchCurrency])
+
+  useEffect(() => {
+    if (rateEditedManually) return
     if (watchCurrency === 'EGP') { setValue('exchange_rate', 1); return }
     const rate = liveRates?.[watchCurrency]
     if (rate) setValue('exchange_rate', Number(rate.toFixed(4)))
-  }, [watchCurrency, liveRates]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [watchCurrency, liveRates, rateEditedManually]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Totals
   const totals = watchItems.reduce((acc, item) => {
@@ -143,8 +154,9 @@ function POForm({ onSubmit, loading }) {
 
           {watchCurrency !== 'EGP' && (
             <FormField label="سعر الصرف (مقابل الجنيه)" error={errors.exchange_rate?.message}
-              hint={!dirtyFields.exchange_rate && liveRates?.[watchCurrency] ? 'سعر اليوم تلقائيًا — قابل للتعديل' : undefined}>
-              <input type="number" step="0.0001" className="form-input ltr" {...register('exchange_rate')} dir="ltr" />
+              hint={!rateEditedManually && liveRates?.[watchCurrency] ? 'سعر اليوم تلقائيًا — قابل للتعديل' : undefined}>
+              <input type="number" step="0.0001" className="form-input ltr" dir="ltr"
+                {...register('exchange_rate', { onChange: () => setRateEditedManually(true) })} />
             </FormField>
           )}
 
